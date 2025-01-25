@@ -109,7 +109,13 @@ function QDE(Z, W, max_iter = 1000, tol = 1e-8)
         end
         
         θ = W0 * β0
-        log_likelihood = ZetaLogLik(θ, z_1, n)
+        
+        
+        if any(θ .< 1)
+            log_likelihood = NaN
+        else
+            log_likelihood = ZetaLogLik(θ, z_1, n)
+        end
         push!(log_lik, log_likelihood)
         
         β0 = β
@@ -117,7 +123,7 @@ function QDE(Z, W, max_iter = 1000, tol = 1e-8)
     end
     
 
-    return β0, iters, log_lik
+    return β0, θ, iters, log_lik
 #     return β, θ, LogLik
 end
 

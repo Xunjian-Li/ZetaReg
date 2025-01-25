@@ -97,7 +97,7 @@ function ZetaMeanLogModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float
         push!(log_lik, log_likelihood)
     end
 
-    return β, iters, log_lik
+    return β, θ, iters, log_lik
 end
 
 

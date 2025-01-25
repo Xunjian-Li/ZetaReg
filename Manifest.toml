@@ -2,7 +2,7 @@
 
 julia_version = "1.11.2"
 manifest_format = "2.0"
-project_hash = "fa7cec62719438823a7b5d788aad75d453c7a53f"
+project_hash = "1a3643379cc46b03a4f0400cb845836fa11e34c8"
 
 [[deps.AliasTables]]
 deps = ["PtrArrays", "Random"]
