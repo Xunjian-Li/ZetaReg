@@ -10,12 +10,13 @@ include("ZetaLogLik.jl")
 include("GenerateMatrixAndVector.jl")
 include("StandardizeColumns.jl")
 
-
 include("datasets/MyPackageData.jl")
-include("datasets/census2000.jl")
-include("datasets/census2010.jl")
-include("datasets/census2020.jl")
-# export ZetaMeanModel, OptimizeZetaMean
+
+
+
+# include("datasets/census2000.csv")
+# include("datasets/census2010.csv")
+# include("datasets/census2020.csv")
 
 
 

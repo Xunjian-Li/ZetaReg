@@ -1,22 +1,8 @@
 # module ZetaMean
 
-export ZetaMeanModel, OptimizeZetaMean
+export ZetaMeanModel
 
 using LinearAlgebra, SpecialFunctions, Random, BenchmarkTools
-
-# 定义 ZetaMeanModel 结构体
-struct ZetaMeanModel
-    Z::Matrix  # 观测矩阵 Z
-    W::Matrix  # 协变量矩阵 W
-#     β::Vector{Float64}  # 模型参数
-    max_iter::Int       # 最大迭代次数
-    tol::Float64        # 收敛容差
-end
-
-# 默认构造函数
-function ZetaMeanModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float64 = 1e-8)
-    return ZetaMeanModel(Z, W, max_iter, tol)
-end
 
 
 # Rootθ 和 LogMean 函数
@@ -78,13 +64,13 @@ end
 
 
 # 模型优化函数
-function OptimizeZetaMean(model::ZetaMeanModel)
-    W = StandardizeColumns(model.W)
-    nn1, nn2 = size(model.Z)
+function ZetaMeanModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float64 = 1e-8)
+    W = StandardizeColumns(W)
+    nn1, nn2 = size(Z)
     W = hcat(ones(nn2), W)  # 添加偏置项
     z = [i for i in 1:nn1, _ in 1:nn2]
-    z_1 = vec(sum(model.Z .* log.(z), dims=1))
-    n = vec(sum(model.Z, dims=1))
+    z_1 = vec(sum(Z .* log.(z), dims=1))
+    n = vec(sum(Z, dims=1))
     β = zeros(size(W)[2])
     log_lik = Float64[]
 
@@ -93,26 +79,34 @@ function OptimizeZetaMean(model::ZetaMeanModel)
     log_likelihood = ZetaLogLik(θ, z_1, n)
     iters = 0
 
-    for iter in 1:model.max_iter
+    for iter in 1:max_iter
         
         iters = iters+1
         log_likelihood_old = log_likelihood
         β_old = β
 
         grad1, Hess1 = BMat(θ, z_1, n, W)
+        
+        if any(.!isreal.(grad1) .| isnan.(grad1) .| .!isreal.(Hess1) .| isnan.(Hess1))
+            println("There exists at least a non-real or NaN value. Stopping execution.")
+            return β, iters, log_lik
+        end
+        
         δ = Hess1 \ grad1
 
         flag_true = true
         while flag_true
             β = β_old - δ
             μ = exp.(W * β) .+ 1
-            θ = Rootθ1.(log.(μ))
+            log_μ = log.(μ)
+            θ = Rootθ1.(log_μ)
+            
             log_likelihood = ZetaLogLik(θ, z_1, n)
             flag_true = log_likelihood < log_likelihood_old
             δ *= 0.5
         end
 
-        if norm(β - β_old) < model.tol
+        if abs(log_likelihood - log_likelihood_old)/(abs(log_likelihood)+1) < tol
             break
         end
 

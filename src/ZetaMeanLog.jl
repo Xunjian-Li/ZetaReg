@@ -1,22 +1,8 @@
 # module ZetaMeanLog
 
-export ZetaMeanLogModel, OptimizeZetaMeanLog
+export ZetaMeanLogModel
 
 using BenchmarkTools, LinearAlgebra, SpecialFunctions, Random, Plots
-
-# 定义模型结构体
-struct ZetaMeanLogModel
-    Z::Matrix{Float64}
-    W::Matrix{Float64}
-#     β::Vector{Float64} 
-    max_iter::Int
-    tol::Float64
-end
-
-# 自定义构造函数，提供默认值
-function ZetaMeanLogModel(Z::Matrix{Float64}, W::Matrix{Float64}; max_iter::Int = 1000, tol::Float64 = 1e-8)
-    return ZetaMeanLogModel(Z, W, max_iter, tol)
-end
 
 # 定义模型的相关方法
 function Rootθ(t, tol = 1e-8)
@@ -61,14 +47,10 @@ end
 
 
 # 定义优化函数
-function OptimizeZetaMeanLog(model::ZetaMeanLogModel)
+function ZetaMeanLogModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float64 = 1e-8)
     
-#     WMeans = mean(model.W, dims=1)
-#     col_std = std(model.W, dims=1)
-#     W = (model.W .- WMeans) ./ col_std
     
-    W = StandardizeColumns(model.W)
-    Z = model.Z
+    W = StandardizeColumns(W)
     
     nn1, nn2 = size(Z)          # numbers of rows and columns
     W = hcat(repeat([1],nn2), W) # add ones
@@ -78,7 +60,6 @@ function OptimizeZetaMeanLog(model::ZetaMeanLogModel)
     β = zeros(size(W)[2])
     
     
-#     β = model.β
     log_lik = Float64[]  # 初始化 log-likelihood 数组
     iters = 0
     
@@ -86,7 +67,7 @@ function OptimizeZetaMeanLog(model::ZetaMeanLogModel)
     θ = Rootθ.(μ)
     log_likelihood = ZetaLogLik(θ, z_1, n)
 
-    for iter in 1:model.max_iter
+    for iter in 1:max_iter
         iters += 1
         log_likelihood_old = log_likelihood
         β_old = β
@@ -110,14 +91,12 @@ function OptimizeZetaMeanLog(model::ZetaMeanLogModel)
         end
 
         # 检查收敛
-        if norm(β - β_old) < model.tol
+        if norm(β - β_old) < tol
             break
         end
         push!(log_lik, log_likelihood)
     end
 
-    # 更新模型参数
-#     model.β .= β
     return β, iters, log_lik
 end
 

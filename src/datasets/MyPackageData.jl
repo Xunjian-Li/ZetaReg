@@ -1,4 +1,4 @@
-module MyPackageData
+# module MyPackageData
 
 # 导出需要公开的常量和类型
 export InsuranceData, CitiesData, Insurance, Cities
@@ -51,4 +51,4 @@ const CitiesData = Cities(
     reshape([1970, 1980, 1991, 2000], 4, 1) 
 )
 
-end
+# end
