@@ -67,4 +67,4 @@ println("===============================================")
 
 ## References
 
-[1] Smith, J., Doe, A., "Understanding Zeta Distributions," *Journal of Statistical Modeling*, 2020.
+[1] Doray L, Arsenault M (2002). Estimators of the regression parameters of the zeta distribution. Insurance: Mathematics and Economics: 30(3), 439-450.
