@@ -11,6 +11,24 @@ To install the package, you can use Julia's package manager:
 using Pkg
 Pkg.add("https://github.com/Xunjian-Li/ZetaReg.git")
 
+- [Usage](#usage)
+- [Models Overview](#models-overview)
+- [Examples](#examples)
+
+## Usage
+
+After installing the package, you can start using it by including it in your Julia code. Below are the steps to load data and call the models.
+
+### Loading the Package and Data
+
+```julia
+using ZetaReg  # Load the ZetaReg package
+
+# Access data from the InsuranceData module
+Z = InsuranceData.num_insurances  # Insurance data matrix
+W = InsuranceData.age  # Age data vector
+
+
 
 # Models Overview
 
