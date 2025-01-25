@@ -1,6 +1,5 @@
 # module ZetaMeanLog
-
-export ZetaMeanLogModel
+export ZetaMeanLogModel, Rootθ
 
 using BenchmarkTools, LinearAlgebra, SpecialFunctions, Random, Plots
 

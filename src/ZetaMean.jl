@@ -89,7 +89,7 @@ function ZetaMeanModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float64 
         
         if any(.!isreal.(grad1) .| isnan.(grad1) .| .!isreal.(Hess1) .| isnan.(Hess1))
             println("There exists at least a non-real or NaN value. Stopping execution.")
-            return β, iters, log_lik
+            return β, θ, iters, log_lik
         end
         
         δ = Hess1 \ grad1

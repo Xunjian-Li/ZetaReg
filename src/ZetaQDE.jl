@@ -57,10 +57,16 @@ function QDE(Z, W, max_iter = 1000, tol = 1e-8)
 
     # 计算 β 和 θ 的初始值
     β0 = pinv(W' * W) * W' * Y  ## 广义逆
+    β = β0
     θ0 = X_mat1 * β0
     
     θ = W0 * β0
-    log_likelihood = ZetaLogLik(θ, z_1, n)
+    
+    if any(θ .< 1)
+        log_likelihood = NaN
+    else
+        log_likelihood = ZetaLogLik(θ, z_1, n)
+    end
     push!(log_lik, log_likelihood)
     
 
@@ -97,6 +103,12 @@ function QDE(Z, W, max_iter = 1000, tol = 1e-8)
                     break
                 end
             end
+        end
+        
+        if any(.!isreal.(Sig) .| isnan.(Sig))
+            println("There exists at least a non-real or NaN value. Stopping execution.")
+            θ = W0 * β
+            return β, θ, iters, log_lik
         end
         
         # 更新 β 和 θ
