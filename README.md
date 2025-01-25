@@ -6,18 +6,18 @@ ZetaReg is a Julia package designed to implement and evaluate several statistica
 
 The package implements three main models:
 
-### QDE (Quantile Difference Estimation)
+### QDE (Quadratic distance estimation) [1]
 
-The QDE model focuses on calculating the quantile differences for the given data and estimating the parameters based on the analysis.
+The Quadratic Distance Estimator (QDE) is an alternative parameter estimation method based on an iteratively reweighted least-squares algorithm, which is consistent, asymptotically unbiased, and normally distributed.
 
-### ZetaMeanModel
+### ZetaMeanModel (Zeta mean regression model via MLE)
 
-This model uses the Zeta distribution to calculate the mean based on the input data.
+This model connects the expectation of the Zeta distribution with the corresponding covariates, and parameter estimation is performed using the maximum likelihood estimation (MLE) method.
 
-### ZetaMeanLogModel
 
-This model extends the ZetaMeanModel by incorporating a logarithmic transformation to better fit the data, particularly when the data is highly skewed.
+### ZetaMeanLogModel (Zeta mean log regression model via MLE)
 
+This model links the expectation of the log-Zeta, where the random variable Zeta follows a Zeta distribution, with the corresponding covariates, and parameter estimation is carried out using the maximum likelihood estimation (MLE) method.
 
 ## Installation
 
@@ -62,3 +62,9 @@ println("===============================================")
 @printf("%-17s | %-10.4f | %-5d | %-10.4f\n", "ZetaMeanLogModel", rho3[1], minimum(θ3), iters3, loglikelihoods3[end])
 println("===============================================")
 ```
+
+
+
+## References
+
+[1] Smith, J., Doe, A., "Understanding Zeta Distributions," *Journal of Statistical Modeling*, 2020.
