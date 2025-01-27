@@ -1,4 +1,4 @@
-using Test, ZetaReg, Random, Printf
+using Test, ZetaReg, Random, Printf, DataFrames
 
 @testset "ZetaReg Tests for InsuranceData" begin
     # 生成随机测试数据
@@ -25,9 +25,9 @@ using Test, ZetaReg, Random, Printf
     println("==============================================\n")
     
     # 假设 Z 和 W 是已定义的矩阵
-    (rho1, θ1, iters1, loglikelihoods1) = QDE(Z, W)
-    (rho2, θ2, iters2, loglikelihoods2) = ZetaMeanModel(Z, W)
-    (rho3, θ3, iters3, loglikelihoods3) = ZetaMeanLogModel(Z, W)
+    (rho1, θ1, iters1, loglikelihoods1, BIC1, _) = QDE(Z, W)
+    (rho2, θ2, iters2, loglikelihoods2, BIC2, _) = ZetaMeanModel(Z, W)
+    (rho3, θ3, iters3, loglikelihoods3, BIC3, _) = ZetaMeanLogModel(Z, W)
 
     
     # 打印结果
@@ -97,9 +97,9 @@ println()
     println("==============================================\n")
     
     # 假设 Z 和 W 是已定义的矩阵
-    (rho1, θ1, iters1, loglikelihoods1) = QDE(Z, W)
-    (rho2, θ2, iters2, loglikelihoods2) = ZetaMeanModel(Z, W)
-    (rho3, θ3, iters3, loglikelihoods3) = ZetaMeanLogModel(Z, W)
+    (rho1, θ1, iters1, loglikelihoods1, BIC1, _) = QDE(Z, W)
+    (rho2, θ2, iters2, loglikelihoods2, BIC2, _) = ZetaMeanModel(Z, W)
+    (rho3, θ3, iters3, loglikelihoods3, BIC3, _) = ZetaMeanLogModel(Z, W)
 
     
     # 打印结果

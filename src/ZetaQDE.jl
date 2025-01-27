@@ -2,7 +2,7 @@
 
 export QDE  # 导出主函数 QDE
 
-using LinearAlgebra, SpecialFunctions
+using LinearAlgebra, SpecialFunctions, Printf, DataFrames
 
 # 定义 QDE 函数
 function QDE(Z, W, max_iter = 1000, tol = 1e-8)
@@ -108,7 +108,7 @@ function QDE(Z, W, max_iter = 1000, tol = 1e-8)
         if any(.!isreal.(Sig) .| isnan.(Sig))
             println("There exists at least a non-real or NaN value. Stopping execution.")
             θ = W0 * β
-            return β, θ, iters, log_lik
+            return β, θ, iters, log_lik, NaN, NaN
         end
         
         # 更新 β 和 θ
@@ -134,10 +134,31 @@ function QDE(Z, W, max_iter = 1000, tol = 1e-8)
         
     end
     
-    BIC = -2 * log_likelihood + length(β) * log(sum(Z,dims = 2)[1])
+    
+    hess = W' * inv(Sig) * W
+    β_0 = zeros(length(β))
+    Wald_stat, std = wald_statistic(β, β_0, hess)
+    p_values = p_value(Wald_stat)
+    lower_bound, upper_bound = confidence_interval(β, std)
 
-    return β0, θ, iters, log_lik
-#     return β, θ, LogLik
+    
+    df = DataFrame(
+        Parameter = 1:length(β),
+        Estimate = [format_number(x) for x in β],
+        StandardError = [format_number(x) for x in std],
+        WaldStatistic = [format_number(x) for x in Wald_stat],
+        p_value = [format_number(x) for x in p_values],
+        Lower95CI = [format_number(x) for x in lower_bound],
+        Upper95CI = [format_number(x) for x in upper_bound]
+    )
+
+    println("QDE Model Summary:")
+    println(df)
+    
+    # 计算BIC
+    BIC = calculate_BIC(log_likelihood, β, Z)
+
+    return β0, θ, iters, log_lik, BIC, df
 end
 
 # end  # module ZetaQDE

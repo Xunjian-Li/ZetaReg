@@ -2,7 +2,7 @@
 
 export ZetaMeanModel
 
-using LinearAlgebra, SpecialFunctions, Random, BenchmarkTools
+using LinearAlgebra, SpecialFunctions, Random, BenchmarkTools, Printf, DataFrames
 
 
 # Rootθ 和 LogMean 函数
@@ -89,7 +89,7 @@ function ZetaMeanModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float64 
         
         if any(.!isreal.(grad1) .| isnan.(grad1) .| .!isreal.(Hess1) .| isnan.(Hess1))
             println("There exists at least a non-real or NaN value. Stopping execution.")
-            return β, θ, iters, log_lik
+            return β, θ, iters, log_lik, NaN, NaN
         end
         
         δ = Hess1 \ grad1
@@ -113,9 +113,30 @@ function ZetaMeanModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float64 
         push!(log_lik, log_likelihood)
     end
     
-    BIC = -2 * log_likelihood + length(β) * log(sum(Z,dims = 2)[1])
+    grad, hess = BMat(θ, z_1, n, W)
+    β_0 = zeros(length(β))
+    Wald_stat, std = wald_statistic(β, β_0, - hess)
+    p_values = p_value(Wald_stat)
+    lower_bound, upper_bound = confidence_interval(β, std)
 
-    return β, θ, iters, log_lik
+    
+    df = DataFrame(
+        Parameter = 1:length(β),
+        Estimate = [format_number(x) for x in β],
+        StandardError = [format_number(x) for x in std],
+        WaldStatistic = [format_number(x) for x in Wald_stat],
+        p_value = [format_number(x) for x in p_values],
+        Lower95CI = [format_number(x) for x in lower_bound],
+        Upper95CI = [format_number(x) for x in upper_bound]
+    )
+
+    println("Zeta Mean Model Summary:")
+    println(df)
+    
+    # 计算BIC
+    BIC = calculate_BIC(log_likelihood, β, Z)
+
+    return β, θ, iters, log_lik, BIC, df
 end
 
 # end  # module ZetaMeanReg

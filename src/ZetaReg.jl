@@ -9,6 +9,7 @@ include("ZetaQDE.jl")
 include("ZetaLogLik.jl")
 include("GenerateMatrixAndVector.jl")
 include("StandardizeColumns.jl")
+include("inference.jl")
 
 include("datasets/MyPackageData.jl")
 

@@ -1,7 +1,7 @@
 # module ZetaMeanLog
 export ZetaMeanLogModel, Rootθ
 
-using BenchmarkTools, LinearAlgebra, SpecialFunctions, Random, Plots
+using BenchmarkTools, LinearAlgebra, SpecialFunctions, Random, Plots, Printf
 
 # 定义模型的相关方法
 function Rootθ(t, tol = 1e-8)
@@ -40,7 +40,7 @@ function BMatrix(μ, θ, z_1, n_1, X)
     s_vec = (z_1 .- n_1 .* μ) .* μ ./ LogZetaSecond.(θ)  # Scoring vector
     Var1 = n_1 .* μ.^2 ./ LogZetaSecond.(θ)
     grad = X' * s_vec
-    hess = -X' * diagm(Var1) * X
+    hess = X' * diagm(Var1) * X
     return grad, hess
 end
 
@@ -77,7 +77,7 @@ function ZetaMeanLogModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float
         # 线性搜索
         flag_true = true
         while flag_true
-            β = β_old - δ
+            β = β_old + δ
             μ = exp.(W * β)
             θ = Rootθ.(μ)
             log_likelihood = ZetaLogLik(θ, z_1, n)
@@ -96,9 +96,37 @@ function ZetaMeanLogModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float
         push!(log_lik, log_likelihood)
     end
     
-    BIC = -2 * log_likelihood + length(β) * log(sum(Z,dims = 2)[1])
+    grad, hess = BMatrix(μ, θ, z_1, n, W)
+    β_0 = zeros(length(β))
+    Wald_stat, std = wald_statistic(β, β_0, hess)
+    p_values = p_value(Wald_stat)
+    lower_bound, upper_bound = confidence_interval(β, std)
 
-    return β, θ, iters, log_lik
+    function format_number(x)
+        if abs(x) < 1e-4
+            return @sprintf("%8.2e", x)  # 使用科学计数法并确保负号对齐，宽度为10
+        else
+            return @sprintf("%8.4f", x)  # 保留4位小数并确保负号对齐，宽度为10
+        end
+    end
+    
+    df = DataFrame(
+        Parameter = 1:length(β),
+        Estimate = [format_number(x) for x in β],
+        StandardError = [format_number(x) for x in std],
+        WaldStatistic = [format_number(x) for x in Wald_stat],
+        p_value = [format_number(x) for x in p_values],
+        Lower95CI = [format_number(x) for x in lower_bound],
+        Upper95CI = [format_number(x) for x in upper_bound]
+    )
+
+    println("Zeta Mean Log Model Summary:")
+    println(df)
+    
+    # 计算BIC
+    BIC = calculate_BIC(log_likelihood, β, Z)
+
+    return β, θ, iters, log_lik, BIC, df
 end
 
 
