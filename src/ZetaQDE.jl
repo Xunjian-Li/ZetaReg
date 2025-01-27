@@ -134,6 +134,7 @@ function QDE(Z, W, max_iter = 1000, tol = 1e-8)
         
     end
     
+    BIC = -2 * log_likelihood + length(β) * log(sum(Z,dims = 2)[1])
 
     return β0, θ, iters, log_lik
 #     return β, θ, LogLik

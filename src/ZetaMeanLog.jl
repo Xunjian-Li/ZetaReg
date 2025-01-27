@@ -72,7 +72,7 @@ function ZetaMeanLogModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float
         β_old = β
 
         grad, hess = BMatrix(μ, θ, z_1, n, W)
-        δ = hess \ grad
+        δ = pinv(hess) * grad
 
         # 线性搜索
         flag_true = true
@@ -95,6 +95,8 @@ function ZetaMeanLogModel(Z::Matrix, W::Matrix; max_iter::Int = 1000, tol::Float
         end
         push!(log_lik, log_likelihood)
     end
+    
+    BIC = -2 * log_likelihood + length(β) * log(sum(Z,dims = 2)[1])
 
     return β, θ, iters, log_lik
 end
