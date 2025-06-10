@@ -117,16 +117,25 @@ function standardize_columns(X::AbstractArray{T}) where T <: AbstractFloat
 end
 
 γ = 0.5772156649015328606
+γ1 = -0.07282
+γ2 = -0.00969
+
+function zeta_prime(s)
+    return -1/(s-1)^2 - γ1
+end
+
+function zeta_primeprime(s)
+    return 2/(s-1)^3 + γ2
+end
 
 function logzeta_prime(s)
-    return (-1 + 1/2 * (s - 1)^2) / ((s - 1) + γ * (s - 1)^2)
+    return zeta_prime(s)/zeta(s)
 end
 
 function logzeta_primeprime(s)
     a = logzeta_prime(s)
-    return (12 - (s - 1)^3)/6/((s - 1)^2 + γ * (s - 1)^3) - a^2
+    return zeta_primeprime(s)/zeta(s) - a^2
 end
-
 
 function Rootθ(t::T, tol ::T = T(1e-8)) where T <: AbstractFloat
     (s, eps) = (T(3.0), T(1.0e-10)) 
