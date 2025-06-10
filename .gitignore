@@ -1,0 +1,7 @@
+*.zip
+*.tar.gz
+*.h5
+*.pt
+*.pkl
+.DS_Store
+.ipynb_checkpoints/

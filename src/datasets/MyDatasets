@@ -1,0 +1,7 @@
+module MyPackage
+    push!(LOAD_PATH, "~/.julia/mydata/")
+    include("MyPackageData.jl")
+    using .MyPackageData
+
+    export insurance_data, cities_data
+end
