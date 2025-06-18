@@ -116,34 +116,24 @@ function standardize_columns(X::AbstractArray{T}) where T <: AbstractFloat
     return X_standardized
 end
 
-γ = 0.5772156649015328606
+γ1 = -0.07282
+γ2 = -0.00969
+
+function zeta_prime(s)
+    return -1/(s-1)^2 - γ1
+end
+
+function zeta_primeprime(s)
+    return 2/(s-1)^3 + γ2
+end
 
 function logzeta_prime(s)
-    return (-1 + 1/2 * (s - 1)^2) / ((s - 1) + γ * (s - 1)^2)
+    return zeta_prime(s)/zeta(s)
 end
 
 function logzeta_primeprime(s)
     a = logzeta_prime(s)
-    return (12 - (s - 1)^3)/6/((s - 1)^2 + γ * (s - 1)^3) - a^2
-end
-
-
-function Rootθ(t::T, tol ::T = T(1e-8)) where T <: AbstractFloat
-    (s, eps) = (T(3.0), T(1.0e-10)) 
-    f = -First(s) - t
-    while f <= 0.0
-        s = 1 / T(2) + s / T(2)
-        f = -First(s) - t
-    end
-    for iter in 1:100
-        df = -Second(s)
-        s = s - f / df
-        f = -First(s) - t
-        if abs(f) < tol
-            break
-        end
-    end
-    return s
+    return zeta_primeprime(s)/zeta(s) - a^2
 end
 
 """
@@ -174,6 +164,24 @@ function Second(θ::T) where T <: AbstractFloat
     else
         return logzeta_primeprime(θ)
     end
+end
+
+function Rootθ(t::T, tol ::T = T(1e-8)) where T <: AbstractFloat
+    (s, eps) = (T(3.0), T(1.0e-10)) 
+    f = -First(s) - t
+    while f <= 0.0
+        s = 1 / T(2) + s / T(2)
+        f = -First(s) - t
+    end
+    for iter in 1:100
+        df = -Second(s)
+        s = s - f / df
+        f = -First(s) - t
+        if abs(f) < tol
+            break
+        end
+    end
+    return s
 end
 
 """
@@ -231,7 +239,7 @@ function ZetaMeanLogModel(
     to = TimerOutput()  # recording time
     n, p = size(W)
     zetas = zetastruct(y, W; intercept = intercept, matrix = matrix)
-
+    
     β_old = similar(zetas.β)
     log_lik = T[]
     iters = T(0)
@@ -250,6 +258,7 @@ function ZetaMeanLogModel(
         # update gradient and hessian matrix
         @timeit to "computing gradient and hessian" BMatrix(zetas)
         @timeit to "computing update direction" zetas.M_storagep .= zetas.hess \ zetas.grad # update direction
+        
         # linear search
         flag_true = true
         while flag_true
@@ -288,9 +297,9 @@ function ZetaMeanLogModel(
 
     function format_number(x)
         if abs(x) < 1e-4
-            return @sprintf("%8.2e", x)  # 使用科学计数法并确保负号对齐，宽度为10
+            return @sprintf("%8.2e", x)  
         else
-            return @sprintf("%8.4f", x)  # 保留4位小数并确保负号对齐，宽度为10
+            return @sprintf("%8.4f", x)  
         end
     end
     
